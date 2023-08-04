@@ -1,0 +1,267 @@
+/*
+ * Josh Chou
+ * 07/16/2023
+ * Section: CSE 154 AA, Marina Wooden
+ * The is set.js which gives the set game its behavior.
+ */
+"use strict";
+
+(function() {
+  const style = ['outline', 'solid', 'striped'];
+  const color = ['green', 'purple', 'red'];
+  const shape = ['diamond', 'oval', 'squiggle'];
+  const count = [1, 2, 3];
+  let timerId;
+  let remainingSeconds;
+
+  window.addEventListener("load", init);
+
+  /** Activates and gives behavior to all the buttons (start, refresh, and back button) */
+  function init() {
+    let startButton = id("start-btn");
+    startButton.addEventListener("click", function() {
+      toggleViews();
+      startTimer();
+      refreshBoard();
+    });
+    let refreshButton = id("refresh-btn");
+    refreshButton.addEventListener("click", refreshBoard);
+    let backButton = id("back-btn");
+    backButton.addEventListener("click", goBack);
+  }
+
+  /** Toggles the view between menu view and game view */
+  function toggleViews() {
+    if (id("menu-view").classList.contains("hidden")) {
+      id("menu-view").classList.remove("hidden");
+      id("game-view").classList.add("hidden");
+    } else {
+      id("menu-view").classList.add("hidden");
+      id("game-view").classList.remove("hidden");
+    }
+  }
+
+  /** fills the board with cards depending on the selected difficulty */
+  function fillBoard() {
+    let selectedDifficulty = document.querySelector('input[name="diff"]:checked').value;
+    const maxCards = 16;
+    if (selectedDifficulty === "easy") {
+      for (let j = getNumCards(); j < maxCards; j++) {
+        id("board").appendChild(generateUniqueCard(true));
+      }
+    } else {
+      for (let j = getNumCards(); j < maxCards; j++) {
+        id("board").appendChild(generateUniqueCard(false));
+      }
+    }
+  }
+
+  /** clears the board and re-fills it */
+  function refreshBoard() {
+    id("board").innerHTML = '';
+    fillBoard();
+  }
+
+  /**
+   * generates random attributes depending on the selected difficulty
+   * all attributes are random except style is "solid" on easy mode
+   * @param {boolean} isEasy true if the selected mode is "easy", false if "standard"
+   * @return {array} representing the attributes in the form [STYLE, SHAPE, COLOR, COUNT]
+   */
+  function generateRandomAttributes(isEasy) {
+    let randomColor = color[Math.floor(Math.random() * color.length)];
+    let randomShape = shape[Math.floor(Math.random() * shape.length)];
+    let randomCount = count[Math.floor(Math.random() * count.length)];
+    if (isEasy) {
+      return [style[1], randomShape, randomColor, randomCount];
+    }
+    let randomStyle = style[Math.floor(Math.random() * style.length)];
+    return [randomStyle, randomShape, randomColor, randomCount];
+  }
+
+  /**
+   * generates a unique card depending on the selected difficulty
+   * div is given proper alt text and .card class
+   * @param {boolean} isEasy true if the selected mode is "easy", false if "standard"
+   * @return {div} returns a div element representing the card
+   */
+  function generateUniqueCard(isEasy) {
+    let newCard = gen("div");
+    let attributes = generateRandomAttributes(isEasy);
+    let cards = qsa("#board .card");
+    let existingIDs = [];
+    for (let i = 0; i < cards.length; i++) {
+      existingIDs.push(cards[i].id);
+    }
+    let newID;
+    newID = attributes[0] + "-" + attributes[1] + "-" + attributes[2] + "-" + attributes[3];
+    while (existingIDs.includes(newID)) {
+      attributes = generateRandomAttributes(isEasy);
+      newID = attributes[0] + "-" + attributes[1] + "-" + attributes[2] + "-" + attributes[3];
+    }
+    newCard.classList.add("card");
+    newCard.id = newID;
+    for (let i = 0; i < attributes[3]; i++) {
+      let cardPart = gen("img");
+      cardPart.src = "img/" + attributes[0] + "-" + attributes[1] + "-" + attributes[2] + ".png";
+      cardPart.alt = attributes[0] + "-" + attributes[1] + "-" +
+      attributes[2] + "-" + attributes[3];
+      newCard.addEventListener("click", cardSelected);
+      newCard.appendChild(cardPart);
+    }
+    return newCard;
+  }
+
+  /** sets and starts the timer depending on the selected option from the dropdown */
+  function startTimer() {
+    const secondsInMinute = 60;
+    const oneSecond = 1000;
+    let dropDown = qs("select");
+    let selectedOption = dropDown.options[dropDown.selectedIndex];
+    remainingSeconds = selectedOption.value;
+    id("time").innerText = String(remainingSeconds / secondsInMinute).padStart(2, '0') +
+    ":" + String(remainingSeconds % secondsInMinute).padStart(2, '0');
+    timerId = setInterval(advanceTimer, oneSecond);
+  }
+
+  /** This function increments the timer and makes the game unplayable when the timer ends */
+  function advanceTimer() {
+    const secondsInMinute = 60;
+    remainingSeconds -= 1;
+    id("time").innerText =
+    String(Math.floor(remainingSeconds / secondsInMinute)).padStart(2, '0') + ":" +
+    String(remainingSeconds % secondsInMinute).padStart(2, '0');
+    if (remainingSeconds <= 0) {
+      clearInterval(timerId);
+      makeGameUnplayable();
+    }
+  }
+
+  /**
+   * This helper function makes the game unplayable by unselecting cards, making cards unclickable,
+   * and deactivating the refresh backButton
+   */
+  function makeGameUnplayable() {
+    let cards = Array.from(qsa("#board .card"));
+    for (let i = 0; i < cards.length; i++) {
+      cards[i].classList.remove("selected");
+      cards[i].removeEventListener("click", cardSelected);
+    }
+    let refreshButton = id("refresh-btn");
+    refreshButton.disabled = true;
+  }
+
+  /** This helper function toggles the view and clears the state of the game */
+  function goBack() {
+    toggleViews();
+    let setCount = id("set-count");
+    setCount.textContent = "0";
+    let refreshButton = id("refresh-btn");
+    refreshButton.disabled = false;
+    clearInterval(timerId);
+  }
+
+  /**
+   * This function selects a card and checks if there are 3 cards selected
+   * If there are 3 cards selected that are a set, they are replaced and the set
+   * count is incremented. If the 3 are not a set, the cards remain and text is
+   * displayed indicating the invalid trio
+   */
+  function cardSelected() {
+    const oneSecond = 1000;
+    this.classList.toggle("selected");
+    let selectedCards = Array.from(qsa("#board .selected"));
+    if (selectedCards.length === 3) {
+      let isSet = isASet(selectedCards);
+      for (let i = 0; i < selectedCards.length; i++) {
+        let card = selectedCards[i];
+        if (isSet) {
+          let isEasy = qs('input[name="diff"]:checked').value === "easy";
+          card = generateUniqueCard(isEasy);
+          id("board").replaceChild(card, selectedCards[i]);
+        }
+        card.classList.add("hide-imgs");
+        card.classList.remove("selected");
+        let message = gen("p");
+        message.textContent = isSet ? "SET!" : "Not a Set";
+        card.appendChild(message);
+        setTimeout(function() {
+          card.classList.remove("hide-imgs");
+          card.removeChild(message);
+        }, oneSecond);
+      }
+      if (isSet) {
+        let setCount = id("set-count");
+        setCount.textContent = parseInt(setCount.textContent) + 1;
+      }
+    }
+  }
+
+  /**
+   * This function checks if a trio of selected cards are a set
+   * @param {array} selected an array representing the 3 cards that are selected
+   * @return {boolean} whether the selected cards are a set or not
+   */
+  function isASet(selected) {
+    let attributes = [];
+    for (let i = 0; i < selected.length; i++) {
+      attributes.push(selected[i].id.split("-"));
+    }
+    for (let i = 0; i < attributes[0].length; i++) {
+      let diff = attributes[0][i] !== attributes[1][i] &&
+                attributes[1][i] !== attributes[2][i] &&
+                attributes[0][i] !== attributes[2][i];
+      let same = attributes[0][i] === attributes[1][i] &&
+                    attributes[1][i] === attributes[2][i];
+      if (!(same || diff)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * This helper function returns the number of cards on the boards
+   * @return {Integer} the number of cards on the board
+   */
+  function getNumCards() {
+    let numCards = qsa("#board .card");
+    return numCards.length;
+  }
+
+  /**
+   * This helper function simplifies the getElementById command
+   * @param {String} id the id of the html element
+   * @return {Element} the selected element
+   */
+  function id(id) {
+    return document.getElementById(id);
+  }
+
+  /**
+   * This helper function simplifies the querySelector command
+   * @param {String} selector html selector of the element
+   * @return {Element} the selected element
+   */
+  function qs(selector) {
+    return document.querySelector(selector);
+  }
+
+  /**
+   * This function simplifies the querySelectorAll command
+   * @param {String} selector the html selector of the element
+   * @return {NodeList} the selected elements
+   */
+  function qsa(selector) {
+    return document.querySelectorAll(selector);
+  }
+
+  /**
+   * This function simplifies the createElement command
+   * @param {String} tagName the html selector of the element being created
+   * @return {Element} the created element
+   */
+  function gen(tagName) {
+    return document.createElement(tagName);
+  }
+})();
