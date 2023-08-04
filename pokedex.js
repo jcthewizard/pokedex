@@ -236,7 +236,7 @@
     if (winner === "p1") {
       qs("h1").textContent = "You Won!";
     } else {
-      qs("h1").textContent = "You Lose!";
+      qs("h1").textContent = "You Lost!";
     }
     id("endgame").classList.remove("hidden");
     id("flee-btn").classList.add("hidden");
