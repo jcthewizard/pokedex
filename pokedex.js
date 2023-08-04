@@ -1,8 +1,9 @@
 /*
  * Josh Chou
- * 07/16/2023
+ * 08/02/2023
  * Section: CSE 154 AA, Marina Wooden
- * The is set.js which gives the set game its behavior.
+ * The is pokedex.js which gives the pokedex game it's behavior. It allows users to battle pokemon
+ * and collect new pokemon when they win!
  */
 "use strict";
 
@@ -14,10 +15,8 @@
   window.addEventListener("load", init);
 
   /**
-   * generates a unique card depending on the selected difficulty
-   * div is given proper alt text and .card class
-   * @param {boolean} isEasy true if the selected mode is "easy", false if "standard"
-   * @return {div} returns a div element representing the card
+   * initializes the game by filling the pokedex, unlocking the 3 starters and activating buttons.
+   * the start button, endgame button, and flee button are actived
    */
   async function init() {
     await fillPokedexView();
@@ -33,9 +32,8 @@
   }
 
   /**
-   * generates a unique card depending on the selected difficulty
-   * div is given proper alt text and .card class
-   * @param {boolean} isEasy true if the selected mode is "easy", false if "standard"
+   * this button switches the view to the battle view and shows the opposing pokemon
+   * this method fetches to the pokemon api to receive data on the pokemon
    */
   async function startBtnBehavior() {
     id("pokedex-view").classList.add("hidden");
@@ -58,9 +56,8 @@
   }
 
   /**
-   * generates a unique card depending on the selected difficulty
-   * div is given proper alt text and .card class
-   * @param {boolean} isEasy true if the selected mode is "easy", false if "standard"
+   * this method ends the battle and takes the user back to the main view
+   * the results from battle are cleared and health is reset
    */
   function endGameBehavior() {
     id("pokedex-view").classList.remove("hidden");
@@ -80,12 +77,7 @@
     qs("#p2 .health-bar").classList.remove("low-health");
   }
 
-  /**
-   * generates a unique card depending on the selected difficulty
-   * div is given proper alt text and .card class
-   * @param {boolean} isEasy true if the selected mode is "easy", false if "standard"
-   * @return {div} returns a div element representing the card
-   */
+  /** this method fetches to the pokemon api and uses the data to fill all 151 pokemon as unfound */
   async function fillPokedexView() {
     try {
       const response = await fetch(POKE_URL + 'pokedex.php?pokedex=all');
@@ -112,10 +104,8 @@
   }
 
   /**
-   * generates a unique card depending on the selected difficulty
-   * div is given proper alt text and .card class
-   * @param {boolean} isEasy true if the selected mode is "easy", false if "standard"
-   * @return {div} returns a div element representing the card
+   * this method fetches to the pokemon api and uses the information to fill the card
+   * with the selected pokemon
    */
   async function showP1Card() {
     const pokeResponse = await fetch(POKE_URL + 'pokedex.php?pokemon=' + this.id);
@@ -139,9 +129,8 @@
   }
 
   /**
-   * generates a unique card depending on the selected difficulty
-   * div is given proper alt text and .card class
-   * @param {boolean} pokeData true if the selected mode is "easy", false if "standard"
+   *  this method fetches to the pokemon api to fill the card of the opposing pokemon
+   * @param {JSON} pokeData data for the game which includes p2 pokemon
    */
   function showP2Card(pokeData) {
     qs("#p2 .name").textContent = pokeData.p2.name;
@@ -172,11 +161,9 @@
   }
 
   /**
-   * generates a unique card depending on the selected difficulty
-   * div is given proper alt text and .card class
-   * @param {String} name true if the selected mode is "easy", false if "standard"
-   * @param {String} dp true if the selected mode is "easy", false if "standard"
-   * @param {String} type true if the selected mode is "easy", false if "standard"
+   * fetches to the pokemon api to receive data on each pokemon's move and whether they hit
+   * logs the turn
+   * updates the state of the game
    */
   async function makeMove() {
     id("loading").classList.remove("hidden");
@@ -210,10 +197,9 @@
   }
 
   /**
-   * generates a unique card depending on the selected difficulty
-   * div is given proper alt text and .card class
-   * @param {String} jsonData true if the selected mode is "easy", false if "standard"
-   * @param {String} type true if the selected mode is "easy", false if "standard"
+   * updates the state after a turn of battle
+   * checks if the game is over and called endGame if it is over
+   * @param {JSON} jsonData json data from the api regarding the current turn
    */
   function updateState(jsonData) {
     qs("#p1 .hp").textContent = jsonData.p1["current-hp"] + "HP";
@@ -238,18 +224,17 @@
   }
 
   /**
-   * generates a unique card depending on the selected difficulty
-   * div is given proper alt text and .card class
-   * @param {String} winner true if the selected mode is "easy", false if "standard"
-   * @param {String} dp true if the selected mode is "easy", false if "standard"
-   * @param {String} type true if the selected mode is "easy", false if "standard"
+   * changes the header
+   * shows the back to pokedex button and hides the flee button
+   * disables the moves
+   * @param {String} winner "p1" if p1 won and "p2" if p2 won
    */
   function endGame(winner) {
     for (let i = 0; i < qsa("#p1 .moves button").length; i++) {
       qsa("#p1 .moves button")[i].disabled = true;
     }
     if (winner === "p1") {
-      qs("h1").textContent = "You Win!";
+      qs("h1").textContent = "You Won!";
     } else {
       qs("h1").textContent = "You Lose!";
     }
@@ -258,31 +243,29 @@
   }
 
   /**
-   * generates a unique card depending on the selected difficulty
-   * div is given proper alt text and .card class
-   * @param {String} name true if the selected mode is "easy", false if "standard"
-   * @param {String} dp true if the selected mode is "easy", false if "standard"
-   * @param {String} type true if the selected mode is "easy", false if "standard"
+   * adds a move to the p1 card
+   * @param {String} name name of the move
+   * @param {String} dp damage of the move
+   * @param {String} type type of the move
    */
   function addMove(name, dp, type) {
     qs(".moves .hidden .move").textContent = name;
     qs(".moves .hidden img").alt = type;
-    qs(".moves .hidden .dp").textContent = dp;
+    qs(".moves .hidden .dp").textContent = dp + " DP";
     qs(".moves .hidden img").src = POKE_URL + "icons/" + type + ".jpg";
     qs(".moves .hidden").classList.remove("hidden");
   }
 
   /**
-   * generates a unique card depending on the selected difficulty
-   * div is given proper alt text and .card class
-   * @param {String} name true if the selected mode is "easy", false if "standard"
-   * @param {String} dp true if the selected mode is "easy", false if "standard"
-   * @param {String} type true if the selected mode is "easy", false if "standard"
+   * adds a move to the p2 card
+   * @param {String} name name of the move
+   * @param {String} dp damage of the move
+   * @param {String} type type of the move
    */
   function addMoveP2(name, dp, type) {
     qs("#p2 .moves .hidden .move").textContent = name;
     qs("#p2 .moves .hidden img").alt = type;
-    qs("#p2 .moves .hidden .dp").textContent = dp;
+    qs("#p2 .moves .hidden .dp").textContent = dp + " DP";
     qs("#p2 .moves .hidden img").src = POKE_URL + "icons/" + type + ".jpg";
     qs("#p2 .moves .hidden").classList.remove("hidden");
   }
@@ -302,10 +285,9 @@
   }
 
   /**
-   * generates a unique card depending on the selected difficulty
-   * div is given proper alt text and .card class
-   * @param {String} name true if the selected mode is "easy", false if "standard"
-   * @param {String} type true if the selected mode is "easy", false if "standard"
+   * adds a move to the p1 card with no DP
+   * @param {String} name name of the move
+   * @param {String} type type of the move
    */
   function addMoveNoDP(name, type) {
     qs(".moves .hidden .move").textContent = name;
@@ -316,10 +298,9 @@
   }
 
   /**
-   * generates a unique card depending on the selected difficulty
-   * div is given proper alt text and .card class
-   * @param {String} name true if the selected mode is "easy", false if "standard"
-   * @param {String} type true if the selected mode is "easy", false if "standard"
+   * adds a move to the p2 card with no DP
+   * @param {String} name name of the move
+   * @param {String} type type of the move
    */
   function addMoveNoDPP2(name, type) {
     qs("#p2 .moves .hidden .move").textContent = name;
