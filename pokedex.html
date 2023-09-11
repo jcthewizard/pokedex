@@ -1,10 +1,4 @@
 <!DOCTYPE html>
-<!--
-  HTML for Pokedex Assignment for CSE 154 HW3.
-  DO NOT MODIFY THIS HTML.
-
-  All Pokemon images originally found from https://bulbapedia.bulbagarden.net/wiki/.
--->
 <html>
   <head>
     <meta charset='utf-8' />
@@ -14,15 +8,13 @@
   </head>
   <body>
     <header>
-      <h1>Your Pokedex</h1>
+      <h1>Pokedex</h1>
     </header>
 
     <main>
       <div id='p1'>
 
         <div class='card-container'>
-          <!-- Health point information should be hidden when the Pokedex view is shown, and
-               displayed when the pokedex view is hidden (ie, in the Game View) -->
           <div class='hidden hp-info'>
             <p>HP:</p>
             <div class='health-bar'></div>
@@ -57,9 +49,9 @@
             <img src='https://courses.cs.washington.edu/courses/cse154/webservices/pokedex/icons/fighting.jpg' alt='weakness' class='weakness' />
           </div>
 
-          <button class='hidden' id='start-btn'>Choose This Pokemon!</button>
-          <button class='hidden' id='flee-btn'>Flee the Battle!</button>
-          <button class='hidden' id='endgame'>Back to Pokedex</button>
+          <button class='hidden' id='start-btn'>Select</button>
+          <button class='hidden' id='flee-btn'>Flee!</button>
+          <button class='hidden' id='endgame'>Back</button>
         </div>
       </div>
 
@@ -86,27 +78,27 @@
 
           <div class='card'>
             <img src='https://courses.cs.washington.edu/courses/cse154/webservices/pokedex/icons/normal.jpg' alt='type' class='type' />
-            <span class='hp'>60HP</span>
+            <span class='hp'>100HP</span>
             <h2 class='name'>Pokemon Name</h2>
             <div class='pokemon-pic'>
               <img src='https://courses.cs.washington.edu/courses/cse154/webservices/pokedex/images/pokeball.png' alt='pokemon' class='pokepic' />
             </div>
-            <p class='info'>Description Here</p>
+            <p class='info'>Description goes Here</p>
             <div class='moves'>
               <button disabled>
-                <span class='move'>Move Name Here</span> <span class='dp'></span>
+                <span class='move'>move 1</span> <span class='dp'></span>
                 <img src='https://courses.cs.washington.edu/courses/cse154/webservices/pokedex/icons/fighting.jpg' alt='Pokemon move' />
               </button>
               <button disabled>
-                <span class='move'>Move Name Here</span> <span class='dp'></span>
+                <span class='move'>move 2</span> <span class='dp'></span>
                 <img src='https://courses.cs.washington.edu/courses/cse154/webservices/pokedex/icons/fighting.jpg' alt='Pokemon move' />
               </button>
               <button disabled>
-                <span class='move'>Move Name Here</span> <span class='dp'></span>
+                <span class='move'>move 3</span> <span class='dp'></span>
                 <img src='https://courses.cs.washington.edu/courses/cse154/webservices/pokedex/icons/fighting.jpg' alt='Pokemon move' />
               </button>
               <button disabled>
-                <span class='move'>Move Name Here</span> <span class='dp'></span>
+                <span class='move'>move 4</span> <span class='dp'></span>
                 <img src='https://courses.cs.washington.edu/courses/cse154/webservices/pokedex/icons/fighting.jpg' alt='Pokemon move' />
               </button>
             </div>

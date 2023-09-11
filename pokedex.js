@@ -1,10 +1,3 @@
-/*
- * Josh Chou
- * 08/02/2023
- * Section: CSE 154 AA, Marina Wooden
- * The is pokedex.js which gives the pokedex game it's behavior. It allows users to battle pokemon
- * and collect new pokemon when they win!
- */
 "use strict";
 
 (function() {
